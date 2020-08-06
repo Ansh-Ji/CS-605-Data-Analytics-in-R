@@ -1,0 +1,281 @@
+---
+title: "Lab01"
+author: "Janish Parikh"
+date: "05/08/2020"
+output: html_document
+---
+Link for github depository:https://github.com/Ansh-Ji/CS-605-Data-Analytics-in-R/tree/master/Lab1
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library('ggplot2')
+```
+Question-(01)
+The numbers of blocked intrusion attempts on each day during the first two weeks
+of the month were 56, 47, 49, 37, 38, 60, 50, 43, 43, 59, 50, 56, 54, 58.
+After the change of firewall settings, the numbers of blocked intrusions during 
+the next 20 days were
+53, 21, 32, 49, 45, 38, 44, 33, 32, 43, 53, 46, 36, 48, 39, 35, 37, 36, 39,45.
+Comparing the number of blocked intrusions before and after the change,
+
+```{r}
+before<-c(56, 47, 49, 37, 38, 60, 50, 43, 43, 59, 50, 56, 54, 58)
+after<-c(53, 21, 32, 49, 45, 38, 44, 33, 32, 43, 53, 46, 36, 48, 39, 35, 37, 36,
+         39,45)
+```
+
+(a) construct side-by-side stem-and-leaf plots
+```{r}
+#stem(before)
+#stem(after)
+library('aplpack')
+stem.leaf.backback(before,after)#use package aplpack
+
+```
+
+(b) compute the five-point summaries  
+```{r}
+summary(before)
+summary(after)
+```
+
+construct parallel boxplots
+
+```{r,echo= FALSE}
+boxplot(before,after,main = "Parallel Boxplots",
+        xlab=("no of blocked intrusion attempts"),
+        names=c('Before','After'),col = c("orange","red"),
+        border = "brown",horizontal = TRUE)
+```
+
+(c) comment on your findings.
+
+The no of blocked intrusion attempts have significantly reduced after the new firewall
+The mean no of  blocked intrusion attempts 
+
+Question-(02) 
+
+A network provider investigates the load of its network. The number of concurrent users is recorded at fifty locations (thousands of people) 17.2 22.1 18.5 17.2 18.6 14.8 21.7 15.8 16.3 22.8 24.1 13.3 16.2 17.5 19.0 23.9 14.8 22.2 21.7 20.7 13.5 15.8 13.1 16.1 21.9 23.9 19.3 12.0 19.9 19.4 15.4 16.7 19.5 16.2 16.9 17.1 20.2 13.4 19.8 17.7 19.7 18.7 17.6 15.9 15.2 17.1 15.0 18.8 21.6 11.9 
+
+```{r}
+user<-c(17.2, 22.1, 18.5, 17.2, 18.6, 14.8, 21.7, 15.8, 16.3, 22.8,  24.1, 13.3, 
+        16.2, 17.5, 19.0,23.9, 14.8, 22.2, 21.7, 20.7 ,13.5 ,15.8, 13.1, 16.1, 
+        21.9, 23.9, 19.3, 12.0, 19.9, 19.4, 15.4, 16.7, 19.5, 16.2, 16.9, 17.1, 
+        20.2, 13.4, 19.8, 17.7, 19.7 ,18.7, 17.6, 15.9, 15.2 ,17.1 ,15.0, 18.8, 
+        21.6 ,11.9)
+```
+
+(a) Compute the sample mean, variance, and standard deviation of the number of concurrent users. 
+
+```{r}
+explore<-function(x){
+  data<-c("Mean"=mean(x),"Median"=median(x), 
+          "Standard Deviation" = sd(x))
+  return(data)
+}
+explore(user)
+```
+
+(b) Estimate the standard error of the sample mean. 
+```{r}
+#Standard Error = s.D/sqrt(n)
+standard_error<-function(x){
+  se<-("Standard Error" = sd(x)/sqrt(length(x)))
+  return(se)
+}
+standard_error(user)
+library('psych')
+describe(user,IQR=T)
+```
+
+(c)Compute the five-point summary and construct a boxplot.
+
+```{r}
+summary(user)
+```
+
+```{r , echo=FALSE}
+boxplot(user,  
+        main="Network Load",
+        xlab = "Location",
+        ylab = "No of concurrent users in thousands",
+        col = "orange"
+        )
+```
+
+(d) Compute the interquartile range. Are there any outliers?  
+```{r}
+# IQR is measure of stastical dispersion IQR=Q3-Q1
+Q1<-quantile(user,0.25)
+Q3<-quantile(user,0.75)
+IQR<-Q3-Q1
+print(IQR)
+#Used 1.5 IQR
+left<- (Q1-(1.5*IQR))
+right<- (Q3+(1.5*IQR))
+outliers<-c(user[user <left],user[user>right])
+print(outliers)
+```
+
+There are no Outliers
+
+(e)It is reported that the number of concurrent users follows approximately Normal distribution. Does the histogram support this claim? 
+```{r , echo=FALSE}
+#function to plot histogram
+plot_histogram<-function(x){
+  p<-ggplot(data=data.frame(data=x),aes(x=data))+
+    geom_histogram(aes(y=stat(ndensity)),bins=10)+
+    geom_density(aes(y=stat(scaled)),fill = "red",alpha = 0.1)
+  plot(p)
+}
+plot_histogram(user)
+```
+
+The distribution looks like a normal distribution
+
+Question-(03) 
+
+Consider three data sets.
+(1) 19, 24, 12, 19, 18, 24, 8, 5, 9, 20, 13, 11, 1, 12, 11, 10, 22, 21, 7, 16,
+15, 15, 26, 16, 1, 13, 21, 21, 20, 19
+(2) 17, 24, 21, 22, 26, 22, 19, 21, 23, 11, 19, 14, 23, 25, 26, 15, 17, 26,
+21, 18, 19, 21, 24, 18, 16, 20, 21, 20, 23, 33
+(3) 56, 52, 13, 34, 33, 18, 44, 41, 48, 75, 24, 19, 35, 27, 46, 62, 71, 24,
+66, 94, 40, 18, 15, 39, 53, 23, 41, 78, 15, 35
+
+```{r}
+dataset1<-c(19, 24, 12, 19, 18, 24, 8, 5, 9, 20, 13, 11, 1, 12, 11, 10, 22, 21, 7, 16,
+        15, 15, 26, 16, 1, 13, 21, 21, 20, 19)
+dataset2<-c(17, 24, 21, 22, 26, 22, 19, 21, 23, 11, 19, 14, 23, 25, 26, 15, 17, 26,
+        21, 18, 19, 21, 24, 18, 16, 20, 21, 20, 23, 33)
+dataset3<-c(56, 52, 13, 34, 33, 18, 44, 41, 48, 75, 24, 19, 35, 27, 46, 62, 71, 24,
+        66, 94, 40, 18, 15, 39, 53, 23, 41, 78, 15, 35)
+```
+
+(a) For each data set, draw a histogram and determine whether the
+distribution is rightskewed, left-skewed, or symmetric
+```{r , echo=FALSE}
+#function to plot histogram
+plot_histogram<-function(x){
+  p<-ggplot(data=data.frame(data=x),aes(x=data))+
+    geom_histogram(aes(y=stat(ndensity)),bins=10)+
+    geom_density(aes(y=stat(scaled)),fill = "red",alpha = 0.1)
+  plot(p)
+}
+plot_histogram(dataset1)
+```
+Left Skewed
+```{r , echo=FALSE}
+plot_histogram(dataset2)
+```
+Uniform
+```{r, echo=FALSE}
+#function to plot histogram
+plot_histogram(dataset3)
+```
+Right Skewed
+
+(b) Compute sample means and sample medians. 
+```{r}
+#function to calculate sample mean and median
+sample_mean_median<-function(x){
+  data<-c("Mean"=mean(x),"Median"=median(x))
+  return(data)}
+sample_mean_median(dataset1)
+sample_mean_median(dataset2)
+sample_mean_median(dataset3)
+```
+(b)Do they support your findings about skewness and symmetry? How?
+```{r}
+mean(dataset1)-median(dataset1)
+
+```
+As mean is less than median we can say it is left skewed
+```{r}
+mean(dataset3)-median(dataset3)
+
+```
+As mean is greater than median it is right skewed
+
+We can determine the same(not always correct) via the help of histogram
+If the histogram has a longer left tail then we call it to be left skewed, same follows for right
+
+
+Question-(04) 
+The following data set represents the number of new computer accounts 
+registered during ten consecutive days.
+43, 37, 50, 51, 58, 105, 52, 45, 45, 10
+
+
+```{r}
+dataset<-c(43, 37, 50, 51, 58, 105, 52, 45, 45, 10)
+```
+(a) Compute the mean, median, quartiles, and standard deviation
+```{r}
+explore<-function(x){
+  data<-c("Mean"=mean(x),"Median"=median(x), 
+          "Standard Deviation" = sd(x),"Quartile-" =quantile(x))
+  
+  return(data)
+}
+explore(dataset)
+```
+(b) Check for outliers using the 1.5(IQR) rule.
+```{r dataset}
+###Below Q1-1.5*IQR  or above Q3+1.5*IQR, where Q1 and Q3 are the first and third 
+#quartiles, respectively, of the variable distribution and IQR=Q3-Q1 is the 
+#interquartile range.
+
+IQR_outliers <- function(x) {
+  Q1<-quantile(x,0.25)
+  Q3<-quantile(x,0.75)
+  IQR<-(Q3-Q1) #inter-quartile range
+  left<- (Q1-(1.5*IQR))
+  right<- (Q3+(1.5*IQR))
+  outliers<-c(x[x <left],x[x>right])
+  return(outliers)
+}
+outliers<-IQR_outliers(dataset)
+print(outliers)
+```
+(c) Delete the detected outliers 
+
+```{r }
+reconstructed_dataset<-dataset[!dataset%in%outliers]
+print(reconstructed_dataset)
+```
+compute the mean, median, quartiles, and standard deviation again
+```{r}
+explore(reconstructed_dataset)
+```
+
+(d) Make a conclusion about the effect of outliers on basic descriptive statistics
+We can do this by analyzing the changes in Mean, Median, Standard Deviation
+```{r}
+difference<-explore(dataset)-explore(reconstructed_dataset)
+```
+Quartile .50% or Median remains unchanged 
+
+Standard Deviation decreases by 17.01943 
+
+Mean is affected  
+```{r }
+#function to plot histogram
+plot_histogram<-function(x){
+  p<-ggplot(data=data.frame(data=x),aes(x=data))+
+    geom_histogram(aes(y=stat(ndensity)),bins=10)+
+    geom_density(aes(y=stat(scaled)),fill = "red",alpha = 0.1)
+  plot(p)
+}
+plot_histogram(dataset)
+```
+
+```{r }
+plot_histogram(reconstructed_dataset)
+```
+
+After removing the outliers we can see that the spread of data has decreased
