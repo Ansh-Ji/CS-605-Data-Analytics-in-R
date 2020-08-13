@@ -1,0 +1,289 @@
+---
+title: "Lab02"
+author: "Janish Parikh"
+date: "12/08/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library('dplyr')
+library('ggplot2')
+library('ggpubr')
+library("rmutil")
+```
+#Question-01 Central limit theorem:
+(A) Generate mean subtracted X1, X2, ..., XN
+uniformly distributed, i.e., U[0, 1], IID random variables. Generate at
+least 10000 samples for each of the random variables and let N = 25.
+```{r}
+set.seed(1)
+N<-25
+randomvariables<-matrix(data=rep(0,25000), nrow = 10000, ncol = N)
+for (i in c(1:N)){
+  randomvariables[,i] <-runif(10000, 0, 1) 
+  randomvariables[,i]<-randomvariables[,i]-mean(randomvariables[,i])
+} 
+colnames(randomvariables)<-c("X1","X2","X3","X4",'X5',"X6","X7",'X8',"X9","X10",
+                             "X11","X12","X13",'X14',"X15","X16","X17",
+                             "X18",'X19',"X20","X21","X22","X23","X24","X25")
+samplespace<-tbl_df(data=randomvariables)
+head(samplespace)
+```
+
+starting from X1 start adding the random variables, i.e.,
+
+Compute Yk= sum(Xi....Xk) Plot the PDFs for each of the Yk.
+
+```{r}
+plot_histogram<-function(x){
+  p<-ggplot(data=data.frame(data=x),aes(x=data))+
+    geom_histogram(aes(y=stat(ndensity)),bins=10)+
+    geom_density(aes(y=stat(scaled)),fill = "red",alpha = 0.1)
+  plot(p)
+}
+```
+
+```{r}
+pdf<-function(samplespace,ytable, N =25){
+ytable<-samplespace
+colnames(ytable)<-gsub("X","Y",colnames(samplespace))
+for (i in c(1:N)){
+  s1<-select(samplespace,c(1:i)) 
+  ytable[,i]<-rowSums(s1)
+} 
+head(ytable)
+x<-list(ytable)
+ list<-sapply(x[[1]], plot_histogram)}
+pdf(samplespace)
+```
+
+(B) Repeat the above experiment for mean subtracted independent random variables, with different distributions, e.g., Uniform, Laplacian, etc.
+
+Compare your results with the above experiment.
+
+```{r}
+set.seed(1)
+for (i in c(1:N)){
+  if(i%%2==0){
+  randomvariables[,i] <-rlaplace(10000, 0.5, 0.1) 
+  } else{
+    randomvariables[,i]<-runif(10000,0,1)
+  }
+  randomvariables[,i]<-randomvariables[,i]-mean(randomvariables[,i])
+} 
+samplespacemixed<-tbl_df(data=randomvariables)
+
+pdf(samplespacemixed,ytable = ytablemixed)
+```
+
+(C) Finally, perform the same experiment for dependent random vari-
+ables and compare your results. For example, X1 ∼ U[−1, 1]; X2 =2X1; X3 = X1 + X2 + 3, and likewise.
+```{r}
+set.seed(1)
+randomvariables[,1]<-runif(10000,-1,1)
+randomvariables[,2]<-2*randomvariables[,1]
+randomvariables[,3]<-randomvariables[,1]+randomvariables[,2]
+for (i in c(4:N)){
+  if(i%%2==0){
+  randomvariables[,i] <-randomvariables[,2] +i 
+  } else{
+    randomvariables[,i]<-randomvariables[,3] + i 
+  }
+  randomvariables[,i]<-randomvariables[,i]-mean(randomvariables[,i])
+} 
+dependentrv<-tbl_df(data=randomvariables)
+
+pdf(dependentrv,ydependent)
+```
+
+```{r}
+rm(i,N,samplespace,samplespacemixed,dependentrv,randomvariables)
+```
+
+#Q. 2: Sampling distribution of mean: 
+A manufacturing process produces cylindrical component parts for the
+automobile industry. It is required to produce the parts with a mean
+diameter of 5.0 mm. It is known that the population standard deviation
+is σ = 0.1 mm. The engineer involved conjectures that the population
+mean is 5.0 mm.
+
+```{r}
+mean = 5.0 #a+b/2
+sd = 0.1 #variance = (b-a)^2/12
+b=round(5+0.1*sqrt(3),2)
+a=10-b
+```
+
+A)An experiment is conducted in which 100 parts produced are selected
+randomly and the diameter measured in each. Generate uniformly distributed 100 random numbers to represent the diameter using available
+information and compute a sample average diameter. Does this sample
+information appear to support or refute the engineer’s conjecture? Draw
+necessary plots.
+```{r}
+set.seed(1)
+diameter<-runif(100,min=a,max=b)
+sampleavgdiameter<-mean(diameter)
+samplevariance<-var(diameter)
+plot_histogram(diameter)
+zs<-(sampleavgdiameter-mean)/sd #zscore
+pnorm(zs) #Getting the probability value
+
+```
+(B)Generate the sampling distribution of mean by repeating the above
+random experiment several times. Based on the sample mean obtained
+thus, comment on the engineer’s conjecture? Draw necessary plots.
+```{r}
+set.seed(1)
+samplingmean<-function(s,n,a=4.83,b=5.17){ #s is no of simulation and n is the no of trials
+  meantable<-matrix(data=NA, nrow = s,ncol=3)
+  colnames(meantable)<-c('Mean','Zscore','PVAL')
+  for (i in c(1:s)){
+    diameter<-diameter<-runif(n,min=a,max=b)
+    meantable[i,1]<-mean(diameter)
+    meantable[i,2]<-(mean(diameter)-(a+b)/2)/(0.1/sqrt(n))
+    meantable[i,3]<-pnorm(meantable[i,2])
+  }
+  plot_histogram(meantable[,1])
+  return(meantable)
+}
+data<-samplingmean(100,100)
+summary(data)
+samplemean<-mean(data[,1])
+zs<-(samplemean-mean)/(sd/sqrt(100)) #Z score
+print(pnorm(zs))
+```
+
+
+(C)Repeat the part (B) by repeating the random experiment for 10000
+parts. Based on the sample mean obtained thus, comment on the engineer’s conjecture? 
+Draw necessary plots.
+```{r}
+set.seed(1)
+data<-samplingmean(10000,100)
+samplemean<-mean(data[,1])
+summary(data)
+  zs<-(samplemean-5.0)/(0.1/sqrt(10000))
+  print(pnorm(zs))
+```
+
+```{r}
+rm(data,a,b,diameter,mean,sampleavgdiameter,samplemean,samplevariance,sd,zs)
+```
+#Q-3Sampling distribution of the difference between two means:
+Consider two populations with certain probability distributions P1(Ω)
+and P2(Ω). Draw two independent random samples of size n1 and n2
+from each population, respectively. Now, generate the sampling distributions 
+of differences of the two means under following cases, and
+comment on the Normal approximation of the sampling distribution of
+difference between two means
+
+(A) For P1(Ω) ∼ N(5, 1) and P2(Ω) ∼ N(3, 1), and for n1 < 30 and n2 < 30.
+```{r}
+set.seed(1)
+library('latex2exp')
+n =20
+m1 = 5
+s1 = 1
+m2 = 3
+s2 = 1
+num_exp = 500
+mean_diff = 0 * c(1:n)
+for(i in c(1:n)){
+  temp1 = rnorm(num_exp, mean = m1, sd = s1)
+  temp2 = rnorm(num_exp, mean = m2, sd = s2)
+  mean_diff[i] = mean(temp1) - mean(temp2)
+}
+p1 <- ggplot(data = data.frame(x = mean_diff), aes(x = x))+
+  geom_histogram(aes(y = stat(ndensity)), bins = 15)+
+  geom_density(aes(y = stat(scaled)), fill = "blue", alpha = 0.15)+
+  labs(x = TeX("$\\bar{X}_1 - \\bar{X}_2$"), y = "Normalized Frequency",
+       title = "Case 1")+
+  theme(plot.title = element_text(hjust = 0.5), plot.margin = unit(c(0.25, 1, 0.25, 0.15), "cm"))
+plot(p1)
+
+```
+
+
+(B)Repeat part (A) for non-normal populations while keeping other settings the same.
+```{r}
+set.seed(1)
+n = 20
+m1 = 5
+s1 = 1
+m2 = 3
+s2 = 1
+num_exp = 500
+mean_diff = 0 * c(1:n)
+for(i in c(1:n)){
+  temp1 = runif(num_exp, min = 2, max = 8)
+  temp2 = runif(num_exp, min = 1, max = 5)
+  mean_diff[i] = mean(temp1) - mean(temp2)
+}
+p2 <- ggplot(data = data.frame(x = mean_diff), aes(x = x))+
+  geom_histogram(aes(y = stat(ndensity)), bins = 12)+
+  geom_density(aes(y = stat(scaled)), fill = "red", alpha = 0.15)+
+  labs(x = TeX("$\\bar{X}_1 - \\bar{X}_2$"), y = "Normalized Frequency",
+       title = "Case 2")+
+  theme(plot.title = element_text(hjust = 0.5))
+plot(p2)
+```
+
+(C) For P1(Ω) ∼ N(5, 1) and P2(Ω) ∼ N(3, 1), and for n1 ≥ 30 and n2 ≥ 30.
+```{r}
+set.seed(1)
+n = 500
+m1 = 5
+s1 = 1
+m2 = 3
+s2 = 1
+num_exp = 500
+mean_diff = 0 * c(1:n)
+for(i in c(1:n)){
+  temp1 = rnorm(num_exp, mean = m1, sd = s1)
+  temp2 = rnorm(num_exp, mean = m2, sd = s2)
+  mean_diff[i] = mean(temp1) - mean(temp2)
+}
+p3 <- ggplot(data = data.frame(x = mean_diff), aes(x = x))+
+  geom_histogram(aes(y = stat(ndensity)), bins = 25)+
+  geom_density(aes(y = stat(scaled)), fill = "yellow", alpha = 0.15)+
+  labs(x = TeX("$\\bar{X}_1 - \\bar{X}_2$"), y = "Normalized Frequency",
+       title = "Case 3")+
+  theme(plot.title = element_text(hjust = 0.5), plot.margin = unit(c(0.25, 1, 0.25, 0.15), "cm"))
+plot(p3)
+
+```
+
+(D) Repeat part (C) for non-normal populations while keeping other settings the same.
+```{r}
+set.seed(1)
+n = 500
+m1 = 5
+s1 = 1
+m2 = 3
+s2 = 1
+num_exp = 500
+mean_diff = 0 * c(1:n)
+for(i in c(1:n)){
+  temp1 = runif(num_exp, min = 2, max = 8)
+  temp2 = runif(num_exp, min = 1, max = 5)
+  mean_diff[i] = mean(temp1) - mean(temp2)
+}
+p4 <- ggplot(data = data.frame(x = mean_diff), aes(x = x))+
+  geom_histogram(aes(y = stat(ndensity)), bins = 30)+
+  geom_density(aes(y = stat(scaled)), fill = "orange", alpha = 0.15)+
+  labs(x = TeX("$\\bar{X}_1 - \\bar{X}_2$"), y = "Normalized Frequency",
+       title = "Case 4")+
+  theme(plot.title = element_text(hjust = 0.5))
+plot(p4)
+```
+
+Draw all necessary plots for detail illustration.
+
+```{r}
+ggarrange(p1, p2, p3, p4, nrow = 2, ncol = 2)
+```
+
+```{r}
+rm(i,m1,m2,mean_diff,n,s1,s2,temp1,temp2,p1,p2,p3,p4,num_exp)
+```
