@@ -39,7 +39,7 @@ Compute Yk= sum(Xi....Xk) Plot the PDFs for each of the Yk.
 plot_histogram<-function(x){
   p<-ggplot(data=data.frame(data=x),aes(x=data))+
     geom_histogram(aes(y=stat(ndensity)),bins=10)+
-    geom_density(aes(y=stat(scaled)),fill = "red",alpha = 0.1)
+    geom_density(aes(y=stat(scaled)),fill = "blue",alpha = 0.1)
   plot(p)
 }
 ```
@@ -77,8 +77,8 @@ samplespacemixed<-tbl_df(data=randomvariables)
 pdf(samplespacemixed,ytable = ytablemixed)
 ```
 
-(C) Finally, perform the same experiment for dependent random vari-
-ables and compare your results. For example, X1 ∼ U[−1, 1]; X2 =2X1; X3 = X1 + X2 + 3, and likewise.
+(C) Finally, perform the same experiment for dependent random variables and compare your results. 
+For example, X1 ∼ U[−1, 1]; X2 =2X1; X3 = X1 + X2 + 3, and likewise.
 ```{r}
 set.seed(1)
 randomvariables[,1]<-runif(10000,-1,1)

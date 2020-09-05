@@ -2,7 +2,10 @@
 title: "Lab01"
 author: "Janish Parikh"
 date: "05/08/2020"
-output: html_document
+output:
+  html_document: default
+  word_document: default
+  pdf_document: default
 ---
 Link for github depository:https://github.com/Ansh-Ji/CS-605-Data-Analytics-in-R/tree/master/Lab1
 
@@ -33,7 +36,7 @@ after<-c(53, 21, 32, 49, 45, 38, 44, 33, 32, 43, 53, 46, 36, 48, 39, 35, 37, 36,
 #stem(before)
 #stem(after)
 library('aplpack')
-stem.leaf.backback(before,after)#use package aplpack
+stem.leaf.backback(before,after)#use package aplpack(another plot package)
 
 ```
 
@@ -49,13 +52,14 @@ construct parallel boxplots
 boxplot(before,after,main = "Parallel Boxplots",
         xlab=("no of blocked intrusion attempts"),
         names=c('Before','After'),col = c("orange","red"),
-        border = "brown",horizontal = TRUE)
+        border = "brown",horizontal = T)
 ```
 
 (c) comment on your findings.
 
-The no of blocked intrusion attempts have significantly reduced after the new firewall
-The mean no of  blocked intrusion attempts 
+The mean no of  blocked intrusion attempts has dropped by 9.80.
+
+The no of blocked intrusion attempts have significantly reduced after the new firewall settings. It has proved to be beneficial.
 
 Question-(02) 
 
@@ -82,14 +86,21 @@ explore(user)
 
 (b) Estimate the standard error of the sample mean. 
 ```{r}
-#Standard Error = s.D/sqrt(n)
-standard_error<-function(x){
-  se<-("Standard Error" = sd(x)/sqrt(length(x)))
-  return(se)
+#function to calculate deviation from any point
+#default value set to mean
+standard_deviation<-function(x=numeric(),y=mean(x)){
+  deviation<-sqrt(sum((x-y)^2/(length(x)-1))) 
+  return(deviation)}
+
+#function to calculate standard error but of any point
+standard_error<-function(x=numeric(),y=mean(x)){
+  error<-(standard_deviation(x,y)/sqrt(length(x)))
+  return(error)
 }
 standard_error(user)
 library('psych')
 describe(user,IQR=T)
+
 ```
 
 (c)Compute the five-point summary and construct a boxplot.
@@ -109,7 +120,7 @@ boxplot(user,
 
 (d) Compute the interquartile range. Are there any outliers?  
 ```{r}
-# IQR is measure of stastical dispersion IQR=Q3-Q1
+# IQR is measure of statistical dispersion IQR=Q3-Q1
 Q1<-quantile(user,0.25)
 Q3<-quantile(user,0.75)
 IQR<-Q3-Q1
@@ -242,6 +253,17 @@ IQR_outliers <- function(x) {
 outliers<-IQR_outliers(dataset)
 print(outliers)
 ```
+
+```{r , echo=FALSE}
+boxplot(dataset,  
+        main="Checking Outliers",
+        col = "orange",
+        horizontal = T
+        )
+```
+The same outliers can be pointed out via a boxplot
+
+
 (c) Delete the detected outliers 
 
 ```{r }
@@ -257,9 +279,9 @@ explore(reconstructed_dataset)
 We can do this by analyzing the changes in Mean, Median, Standard Deviation
 ```{r}
 difference<-explore(dataset)-explore(reconstructed_dataset)
+print(difference )
 ```
 Quartile .50% or Median remains unchanged 
-
 Standard Deviation decreases by 17.01943 
 
 Mean is affected  
@@ -278,4 +300,5 @@ plot_histogram(dataset)
 plot_histogram(reconstructed_dataset)
 ```
 
-After removing the outliers we can see that the spread of data has decreased
+After removing the outliers we can see that the spread of data has decreased and the data is more closely distributed.
+
