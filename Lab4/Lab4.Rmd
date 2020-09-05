@@ -8,7 +8,7 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-
+[link for codes](https://github.com/Ansh-Ji/CS-605-Data-Analytics-in-R/tree/master/Lab4)
 ## Loading the required Packages
 ```{r, message=FALSE}
 library('dplyr')

@@ -1,0 +1,16 @@
+---
+title: "Untitled"
+author: "Janish Parikh"
+date: "23/08/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library('dplyr')
+arithmetic<-data.frame(Topic=c("Numbers & Divisibility", "Percentage", "Profit Loss", "Ratio"), Expertise=c( 1,1,1,1))
+print(arithmetic)
+```
